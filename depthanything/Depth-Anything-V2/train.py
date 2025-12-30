@@ -27,8 +27,11 @@ def train(student_model, teacher_model, train_loader, optimizer, scheduler, comp
                 teacher_output, teacher_features = teacher_model(teacher_image)
             student_output = student_model(student_image)
             student_features = student_model.features
+            teacher_output = teacher_output.unsqueeze(1).detach()
             loss = 0.0
-            loss_depth = compute_loss(student_output, teacher_output)
+            # 將 student_output (例如 256x256) 插值到 teacher_output (例如 518x518)
+            student_output_resized = F.interpolate(student_output, size=teacher_output.shape[-2:], mode='bilinear', align_corners=False)
+            loss_depth = compute_loss(student_output_resized, teacher_output)
             loss_features = student_model.align_features(student_features, teacher_features)
             loss += loss_depth + args.hyper_para * loss_features
             # for sf, tf in zip(student_features, teacher_features):
@@ -41,24 +44,25 @@ def train(student_model, teacher_model, train_loader, optimizer, scheduler, comp
             })
         scheduler.step() if scheduler is not None else None
         if (epoch + 1) % 10 == 0:
-            torch.save(student_model.state_dict(), f'student_model_epoch_{epoch+1}.pth')
-    torch.save(student_model.state_dict(), 'student_model.pth')
+            torch.save(student_model.state_dict(), f'ckpt/student_model_epoch_{epoch+1}.pth')
+    torch.save(student_model.state_dict(), 'ckpt/student_model.pth')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train METER model')
-    parser.add_argument('--batch-size', type=int, default=1, help='Input batch size for training')
+    parser.add_argument('--batch-size', type=int, default=8, help='Input batch size for training')
     parser.add_argument('--epochs', type=int, default=1, help='Number of epochs to train')
     parser.add_argument('--lr', type=float, default=1e-3, help='Learning rate')
     parser.add_argument('--device', type=str, default='cuda', help='Device to use for training')
     parser.add_argument('--hyper_para', type=float, default=1.0, help='Hyperparameter for feature alignment loss')
+    parser.add_argument('--train_csv', type=str, default='./dataset/data/nyu2_train.csv', help='Path to training CSV')
 
     args = parser.parse_args()
 
-    train_dataset = DepthDataset("./dataset", data_csv="./dataset/data/nyu2_train.csv")
-    train_loader = DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=0, pin_memory=True)
+    train_dataset = DepthDataset("./dataset", data_csv=args.train_csv)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, pin_memory=True)
 
-    student_model = unet()
-    teacher_model = DepthAnythingV2FeatureExtractor()
+    student_model = unet().to(args.device)
+    teacher_model = DepthAnythingV2FeatureExtractor().to(args.device)
 
     optimizer = torch.optim.AdamW(student_model.parameters(), lr=args.lr)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=20, gamma=0.1)
