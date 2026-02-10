@@ -45,7 +45,7 @@ def train(student_model, teacher_model, train_loader, optimizer, scheduler, comp
         scheduler.step() if scheduler is not None else None
         if (epoch + 1) % 10 == 0:
             torch.save(student_model.state_dict(), f'ckpt/student_model_epoch_{epoch+1}.pth')
-    torch.save(student_model.state_dict(), 'ckpt/student_model.pth')
+        torch.save(student_model.state_dict(), 'ckpt/student_model.pth')
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Train METER model')

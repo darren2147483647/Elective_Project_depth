@@ -210,7 +210,7 @@ def test(student_model, teacher_model, test_loader, args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--test_csv', type=str, default='./dataset/data/nyu2_test.csv', help='Path to test CSV')
-    parser.add_argument('--checkpoint', type=str, default='ckpt/student_model.pth', help='Path to trained student model')
+    parser.add_argument('--checkpoint', type=str, default='ckpt/student_model_epoch_10.pth', help='Path to trained student model')
     parser.add_argument('--output_dir', type=str, default='./results', help='Directory to save results')
     parser.add_argument('--device', type=str, default='cuda')
     parser.add_argument('--num_vis', type=int, default=10, help='Number of images to visualize')
