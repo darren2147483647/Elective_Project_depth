@@ -38,8 +38,8 @@ python test.py --checkpoint [ckpt_path] --test-csv [test_data_csv]
 
 ### 成果
 ![截圖](知識蒸餾10ep.png)
-![測試結果](depthanything\Depth-Anything-V2\results\result_0000.jpg)
-![測試結果](depthanything\Depth-Anything-V2\results\result_0001.jpg)
+![測試結果](depthanything/Depth-Anything-V2/results/result_0000.jpg)
+![測試結果](depthanything/Depth-Anything-V2/results/result_0001.jpg)
 我使用比原始設計更小的Unet作為學生模型，執行10個epoch測試，訓練有擬合的跡象
 
 ### 未來計畫
